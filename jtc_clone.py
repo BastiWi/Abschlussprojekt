@@ -4,7 +4,6 @@ import time
 # Selenium Imports
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options
 import jtc_resource
@@ -18,14 +17,14 @@ class cloneticket(unittest.TestCase):
     def setUp(self):
         self.baseUrl = "https://jira-test1.elektrobit.com/browse/ASCSWTEST-49"
         self.options = Options()
-        #self.options.headless = True
+        self.options.headless = True
         self.options.add_argument("--window-size=1920,1080")
         self.driver = webdriver.Chrome(options=self.options)
         self.driver.implicitly_wait(0.2)
         self.driver.get(self.baseUrl)
 
 
-    def test_login(self):
+    def test_runner(self):
         self.baseUrl = "https://jira-test1.elektrobit.com/browse/ASCSWTEST-49"
         self.driver.get(self.baseUrl)
         usr = jtc_resource.usr["usr"]
@@ -38,7 +37,7 @@ class cloneticket(unittest.TestCase):
             usr_input.send_keys(usr)
             time.sleep(0.5)
         except TimeoutException as error:
-            error = "An Error occured"
+            error = "An Error occured at sending username"
             print(error)
         try:
             pw_input = self.driver.find_element(
@@ -48,7 +47,7 @@ class cloneticket(unittest.TestCase):
             pw_input.send_keys(password)
             time.sleep(0.5)
         except TimeoutException as error:
-            error = "An Error occured"
+            error = "An Error occured at sending password"
             print(error)
         try:
             login_btn = self.driver.find_element(
@@ -57,43 +56,47 @@ class cloneticket(unittest.TestCase):
             )
             login_btn.click()
             time.sleep(0.5)
+            self.assertIn("EB external Jira",self.driver.title)
         except TimeoutException as error:
-            error = "An Error occured"
+            error = "An Error occured by clicking the login button"
             print(error)
         try:
             more_btn = self.driver.find_element(
                 By.XPATH,
-                "/html/body/div[1]/div[2]/div[1]/div/div/main/div/div[2]/div/header/div/div[2]/div/div/div/div[1]/div[3]/a[2]/span",
+                "/html/body/div[1]/div[2]/div[1]/div/div/main/div/div[2]/div"+
+                "/header/div/div[2]/div/div/div/div[1]/div[3]/a[2]/span",
             )
             more_btn.click()
             time.sleep(0.5)
         except TimeoutException as error:
-            error = "An Error occured"
+            error = "An Error occured by clicking the more button"
             print(error)
         try:
             clone_btn = self.driver.find_element(
                 By.XPATH,
-                "/html/body/div[1]/div[2]/div[1]/div/div/main/div/div[2]/div/header/div/div[2]/div/aui-dropdown-menu[1]/aui-section[6]/div/aui-item-link[2]/a",
+                "/html/body/div[1]/div[2]/div[1]/div/div/main/div/div[2]/div/header"+
+                "/div/div[2]/div/aui-dropdown-menu[1]/aui-section[6]/div/aui-item-link[2]/a",
             )
             clone_btn.click()
             time.sleep(0.5)
         except TimeoutException as error:
-            error = "An Error occured"
+            error = "An Error occured by clicking the clone button"
             print(error)
         try:
             create_btn = self.driver.find_element(
                 By.XPATH,
                 "/html/body/div[10]/div[2]/form/div[2]/div/input",
             )
-            create_btn.click()
-            time.sleep(15)
+            create_btn.click()	
+            self.driver.implicitly_wait(40)
         except TimeoutException as error:
-            error = "An Error occured"
+            error = "An Error occured by clicking the create button"
             print(error)
 
     def set_issue_key(self):
         issue_key = self.driver.find_element(By.XPATH,
-        "/html/body/div[1]/div[2]/div[1]/div/div/main/div/div[2]/div/header/div/div[1]/div/div[2]/ol/li[2]/a")
+        "/html/body/div[1]/div[2]/div[1]/div/div/main/div/div[2]/div/header"+
+        "/div/div[1]/div/div[2]/ol/li[2]/a")
         self.issue_key1 = issue_key.text
         return self.issue_key1
 
@@ -103,7 +106,7 @@ class cloneticket(unittest.TestCase):
 
 def clone_run():
     cloneticket.setUp(cloneticket)
-    cloneticket.test_login(cloneticket)
+    cloneticket.test_runner(cloneticket)
     i_key = cloneticket.set_issue_key(cloneticket)
     cloneticket.tearDown(cloneticket)
     return i_key

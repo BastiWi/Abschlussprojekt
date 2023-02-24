@@ -1,0 +1,19 @@
+
+Running tests... 
+----------------------------------------------------------------------
+ test_auth_variables (__main__.TestAuth) ... OK (0.001005)s
+ test_jira_login (__main__.TestAuth) ... OK (0.085385)s
+ test_clone (__main__.TestClone) ... OK (13.391579)s
+ test_filter (__main__.TestFilter) ... OK (0.230916)s
+ test_mail_variables (__main__.TestMail) ... OK (0.000000)s
+ test_mails (__main__.TestMail) ... OK (0.109711)s
+
+----------------------------------------------------------------------
+Ran 6 tests in 0:00:17
+
+OK
+
+
+
+Generating HTML reports... 
+report\TestResults_TestAuth_TestClone_TestFilter_TestMail_2023-02-23_19-27-33.html
