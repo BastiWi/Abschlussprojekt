@@ -1,4 +1,4 @@
-'''blubbl'''
+'''Testing module'''
 import unittest
 import time
 import HTMLTestRunner
@@ -14,15 +14,15 @@ import jtc_resource
 import jtc_filter
 import jtc_mail
 class TestAuth(unittest.TestCase):
-    """test suite for jira autentication"""
+    # test suite for jira autentication
     def test_auth_variables(self):
-        """check if variables exist and are strings"""
+        #check if variables exist and are strings
         assert isinstance(jtc_resource.usr["usr"], str)
         assert isinstance(jtc_resource.pw["pw"], str)
         assert isinstance(jtc_resource.server["server"], str)
 
     def test_jira_login(self):
-        """Test login to jira"""
+        # test login to jira
         try:
             login_test = jtc_auth.jtc_login()
             self.assertEqual(None, login_test.auth)
@@ -30,9 +30,9 @@ class TestAuth(unittest.TestCase):
             print('error')
 
 class TestFilter(unittest.TestCase):
-    """test suite for jira filtering"""
+    # test suite for jira filtering
     def test_filter(self):
-        """check if JQL Tag is running"""
+        # check if JQL Tag is running
         issues, issue, assignee = jtc_filter.jtc_issuefilter()
         self.assertNotEqual(None, issues)
         assert isinstance(assignee, str)
@@ -41,9 +41,9 @@ class TestFilter(unittest.TestCase):
             self.assertEqual((len(issue)), (len(issues)))
 #hier muss noch ein test rein ob der filter auch funzt
 class TestClone(unittest.TestCase):
-    """test suite for cloning tickets with selenium"""
+    # test suite for cloning tickets with selenium
     def setUp(self):
-        """setup selenium frame"""
+        # setup selenium frame
         self.baseUrl = "https://jira-test1.elektrobit.com/browse/ASCSWTEST-49"
         self.options = Options()
         self.options.headless = True
@@ -53,7 +53,7 @@ class TestClone(unittest.TestCase):
         self.driver.get(self.baseUrl)
 
     def test_clone(self):
-        """check if cloning works"""
+        # check if cloning works
         self.baseUrl = "https://jira-test1.elektrobit.com/browse/ASCSWTEST-49"
         self.driver.get(self.baseUrl)
         usr = jtc_resource.usr["usr"]
@@ -71,7 +71,7 @@ class TestClone(unittest.TestCase):
         try:
             pw_input = self.driver.find_element(
                 By.CSS_SELECTOR,
-                "#login-form-password",
+                "login-form-password",
             )
             pw_input.send_keys(password)
             time.sleep(0.5)
@@ -113,7 +113,7 @@ class TestClone(unittest.TestCase):
             print(error)
 
     def set_issue_key(self):
-        """try to get issue key"""
+        # try to get issue key
         try:
             self.driver.find_element(By.XPATH,
             "/html/body/div[1]/div[2]/div[1]/div/div/main/div/div[2]/div/header"+
@@ -123,12 +123,12 @@ class TestClone(unittest.TestCase):
             print(error)
 
     def tearDown(self):
-        """close browser"""
+        # close browser
         self.driver.quit()
 class TestMail(unittest.TestCase):
-    """test suite for mailing system"""
+    # test suite for mailing system
     def test_mail_variables(self):
-        """check mailing system"""
+        # check mailing system
         assert isinstance(jtc_resource.mail_pw, str)
         assert isinstance(jtc_resource.smtp_server, str)
         assert isinstance(jtc_resource.port, int)
@@ -137,10 +137,10 @@ class TestMail(unittest.TestCase):
         assert isinstance(jtc_resource.NB_USER, str)
 
     def test_mails(self):
-        """try to login to mail server"""
+        # try to login to mail server
         login_mails = jtc_mail.SendMail.mails_login()
         self.assertNotEqual(login_mails.auth, None)
-        #hier muss noch ein test rein um zu prüfen ob auch mails verschickt werden    
+        # hier muss noch ein test rein um zu prüfen ob auch mails verschickt werden    
 
 
 if __name__ == "__main__":

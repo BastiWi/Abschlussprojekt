@@ -1,5 +1,4 @@
-
-
+'''main starting module'''
 import jtc_mail
 
 def jtc_run():

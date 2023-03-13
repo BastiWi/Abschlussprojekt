@@ -1,4 +1,4 @@
-'''blubbl'''
+'''Module to send either "no Fail" e-mail or "error" e-mail'''
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -9,7 +9,7 @@ import jtc_resource
 issue, issues, assignee = jtc_filter.run_jtc()
 
 class SendMail():
-    '''creating mails:'''
+    # creating mails
     def mails_login():
         '''Try to log in to smtp server'''
         smtp = smtplib.SMTP("mail-de.ebgroup.elektrobit.com", 587)
@@ -20,8 +20,8 @@ class SendMail():
         return smtp
 
     def mail_content():
-        '''create mail whether at least 1 ticket has been created or another when no 
-        ticket has been created or send testreport if errors occurred while testing'''
+        # create mail whether at least 1 ticket has been created or another when no 
+        # ticket has been created
         if (len(issues)) > 0:
             smtp = smtplib.SMTP("mail-de.ebgroup.elektrobit.com", 587)
             smtp.ehlo()
@@ -45,8 +45,11 @@ class SendMail():
             msg['Subject'] = subject
             msg['To'] = jtc_resource.receiver_email
             try:
-                smtp.sendmail(jtc_resource.sender_email,
-                    jtc_resource.receiver_email, msg.as_string())
+                smtp.sendmail (
+                              jtc_resource.sender_email,
+                              jtc_resource.receiver_email,
+                              msg.as_string()
+                              )
             except smtplib.SMTPSenderRefused as error:
                 print(error)
             smtp.close()
@@ -74,19 +77,26 @@ class SendMail():
             msg['Subject'] = subject
             msg['To'] = jtc_resource.receiver_email
             try:
-                smtp.sendmail(jtc_resource.sender_email,
-                    jtc_resource.receiver_email, msg.as_string())
+                smtp.sendmail (
+                              jtc_resource.sender_email,
+                              jtc_resource.receiver_email,
+                              msg.as_string()
+                              )
             except smtplib.SMTPSenderRefused as error:
                 print(error)
             smtp.close()
 
 class send_error_mail():
     def error_mail():
+        # send testreport if errors occurred while testing
         smtp = smtplib.SMTP("mail-de.ebgroup.elektrobit.com", 587)
         smtp.ehlo()
         smtp.starttls()
         smtp.ehlo()
-        smtp.login(jtc_resource.NB_USER, jtc_resource.mail_pw)
+        smtp.login (
+                   jtc_resource.NB_USER,
+                   jtc_resource.mail_pw
+                   )
         subject = "Report JTC - Automization"
 
         msg3 = f"""\
@@ -105,13 +115,16 @@ class send_error_mail():
         msg['Subject'] = subject
         msg['To'] = jtc_resource.receiver_email
         try:
-            smtp.sendmail(jtc_resource.sender_email,
-                jtc_resource.receiver_email, msg.as_string())
+            smtp.sendmail (
+                          jtc_resource.sender_email,
+                          jtc_resource.receiver_email,
+                          msg.as_string()
+                          )
         except smtplib.SMTPSenderRefused as error:
             print(error)
         smtp.close()
 
 
 def mailsender():
-    '''send Mail and close server'''
+    # send Mail and close server
     SendMail.mail_content()
