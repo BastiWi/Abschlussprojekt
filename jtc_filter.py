@@ -43,6 +43,8 @@ def jtc_issuefilter():
     # set new assignee and block base Ticket by link
     issue = []
     assignee = jtc_resource.assignee["assignee"]
+    # if 1<2:
+    #     return
     for i in range(len(issues)):
         issuekey2 = jtc_clone.clone_run()
         issue.append(issuekey2)
@@ -54,19 +56,19 @@ def jtc_issuefilter():
                                )
     print(issue)
 
-    for m in range(len(issue)): 
-        try:
-            conn = mysql.connector.connect(
-                user="root",
-                password="",
-                host="127.0.0.1",
-                port=3306,
-                database="jtc_db"
-            )
-        except mysql.connector.Error as e:
-            print(f"Error connecting to mySQL Platform: {e}")
-            sys.exit(1)
+    try:
+        conn = mysql.connector.connect(
+            user="root",
+            password="",
+            host="127.0.0.1",
+            port=3306,
+            database="jtc_db"
+        )
+    except mysql.connector.Error as e:
+        print(f"Error connecting to mySQL Platform: {e}")
+        sys.exit(1)
 
+    for m in range(len(issue)): 
             # Get Cursor
         cur = conn.cursor()
         sql = "INSERT INTO new_issues (issue, link) VALUES (%s, %s)"
