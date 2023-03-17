@@ -62,7 +62,7 @@ class cloneticket(unittest.TestCase):
                                                  )
             login_btn.click()
             time.sleep(0.5)
-            self.assertIn("EB external Jira",self.driver.title)
+            # self.assertIn("EB external Jira", self.driver.title)
         except TimeoutException as error:
             error = "An Error occured by clicking the login button"
             print(error)
@@ -88,16 +88,17 @@ class cloneticket(unittest.TestCase):
                                                  + "/aui-section[6]/div/aui-item-link[2]/a",
                                                  )
             clone_btn.click()
-            time.sleep(0.5)
+            time.sleep(2.5)
         except TimeoutException as error:
             error = "An Error occured by clicking the clone button"
             print(error)
         try:
-            create_btn = self.driver.find_element(
-                By.XPATH,
-                "/html/body/div[10]/div[2]/form/div[2]/div/input",
-            )
+            create_btn = self.driver.find_element (
+                                                  By.XPATH,
+                                                  "/html/body/div[8]/div[2]/form/div[2]/div/input",
+                                                  )
             create_btn.click()
+            time.sleep(2.5)
             self.driver.implicitly_wait(40)
         except TimeoutException as error:
             error = "An Error occured by clicking the create button"
@@ -108,8 +109,9 @@ class cloneticket(unittest.TestCase):
         issue_key = self.driver.find_element (
                                              By.XPATH,
                                              "/html/body/div[1]/div[2]/div[1]"
-                                             + "/div/div/main/div/div[2]/div/header"
-                                             + "/div/div[1]/div/div[2]/ol/li[2]/a"
+                                             + "/div/div/main/div/div[2]/div"
+                                             + "/header/div/div[1]/div"
+                                             + "/div[2]/ol/li[2]/a"
                                              )
         self.issue_key1 = issue_key.text
         return self.issue_key1

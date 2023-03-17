@@ -32,7 +32,6 @@ class SendMail():
             msg1 = f"""\
                 Hi {assignee},\n\n
                 These new Tickets have been created.\n
-                No Issues occurred while testing.\n
                 \n
                 {str(issue)}
                 \n
@@ -40,8 +39,6 @@ class SendMail():
                 """
             msg = MIMEMultipart()
             msg.attach(MIMEText(msg1))
-            file = open('Test-Report.txt')
-            msg.attach(MIMEText(file.read()))
             msg['Subject'] = subject
             msg['To'] = jtc_resource.receiver_email
             try:
@@ -65,15 +62,12 @@ class SendMail():
             msg2 = f"""\
                 Hi {assignee},\n\n
                 No new Tickets have been created.\n
-                No Issues occurred while testing.\n
                 \n
                 Thank you and have a nice day!!!
                 \n
                 """
             msg = MIMEMultipart()
             msg.attach(MIMEText(msg2))
-            file = open('Test-Report.txt')
-            msg.attach(MIMEText(file.read()))
             msg['Subject'] = subject
             msg['To'] = jtc_resource.receiver_email
             try:
@@ -118,6 +112,7 @@ class send_error_mail():
             smtp.sendmail (
                           jtc_resource.sender_email,
                           jtc_resource.receiver_email,
+                          jtc_resource.receiver_email_2,
                           msg.as_string()
                           )
         except smtplib.SMTPSenderRefused as error:

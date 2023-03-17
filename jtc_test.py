@@ -3,17 +3,20 @@ import unittest
 import time
 import HTMLTestRunner
 
-# Selenium Imports
+# Selenium imports
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options
 
+# JTC Tool imports
 import jtc_auth
 import jtc_resource
 import jtc_filter
 import jtc_mail
-class TestAuth(unittest.TestCase):
+import jtc_db_reports
+
+class TestAll(unittest.TestCase):
     # test suite for jira autentication
     def test_auth_variables(self):
         #check if variables exist and are strings
@@ -29,8 +32,6 @@ class TestAuth(unittest.TestCase):
         except:
             print('error')
 
-class TestFilter(unittest.TestCase):
-    # test suite for jira filtering
     def test_filter(self):
         # check if JQL Tag is running
         issues, issue, assignee = jtc_filter.jtc_issuefilter()
@@ -40,9 +41,9 @@ class TestFilter(unittest.TestCase):
         if (len(issues)) > 0:
             self.assertEqual((len(issue)), (len(issues)))
 #hier muss noch ein test rein ob der filter auch funzt
-class TestClone(unittest.TestCase):
-    # test suite for cloning tickets with selenium
+
     def setUp(self):
+        # test suite for cloning tickets with selenium
         # setup selenium frame
         self.baseUrl = "https://jira-test1.elektrobit.com/browse/ASCSWTEST-49"
         self.options = Options()
@@ -69,10 +70,10 @@ class TestClone(unittest.TestCase):
             error = "An Error occured at sending username"
             print(error)
         try:
-            pw_input = self.driver.find_element(
-                By.CSS_SELECTOR,
-                "login-form-password",
-            )
+            pw_input = self.driver.find_element (
+                By.XPATH,
+                "/html/body/div/div/div/div/main/form/div[1]/div[2]/div/div[2]/input",
+                )
             pw_input.send_keys(password)
             time.sleep(0.5)
         except TimeoutException as error:
@@ -125,8 +126,7 @@ class TestClone(unittest.TestCase):
     def tearDown(self):
         # close browser
         self.driver.quit()
-class TestMail(unittest.TestCase):
-    # test suite for mailing system
+
     def test_mail_variables(self):
         # check mailing system
         assert isinstance(jtc_resource.mail_pw, str)
@@ -145,6 +145,8 @@ class TestMail(unittest.TestCase):
 
 if __name__ == "__main__":
     fp = open('Test-Report.txt', 'w')
-    testresult = unittest.main(testRunner=HTMLTestRunner.HTMLTestRunner(stream=fp, combine_reports=True, output="./report", report_title="Test-Report"), exit = False)
+    testresult = unittest.main(testRunner=HTMLTestRunner.HTMLTestRunner(stream=fp, combine_reports=True, output="./report", report_title="JTC Test-Report"), exit = False)
+    fp = open('Test-Report.txt', 'r')
     if testresult.result.wasSuccessful() == False:
         jtc_mail.send_error_mail.error_mail()
+    jtc_db_reports.table_insert_reports()
