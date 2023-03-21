@@ -6,8 +6,12 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 
-class jtc_prefilter:
-    def jtc_run_prefilter():
+class jtc_prefiltering:
+    def __init__(self, smtp):
+        self.smtp = smtp
+
+    @classmethod
+    def jtc_run_prefilter(self):
         # Run filter with original JQL TAG:
         # filter = 105117 AND NOT (issueFunction in linkedIssuesOf("issueFunction in linkedIssuesOf
         # (\"filter=105117\", \"depends on\") AND project = ASCSWTEST") AND project = ASCCR)
@@ -15,24 +19,29 @@ class jtc_prefilter:
         
         jira = jtc_auth.jtc_login()
         prefiltered_issues = []
-        for issue in jira.search_issues(
-            "\u0066\u0069\u006c\u0074\u0065\u0072\u0020\u003d\u0020\u0031\u0030"
-            + "\u0035\u0031\u0031\u0037\u0020\u0041\u004e\u0044\u0020\u004e\u004f"
-            + "\u0054\u0020\u0028\u0069\u0073\u0073\u0075\u0065\u0046\u0075\u006e"
-            + "\u0063\u0074\u0069\u006f\u006e\u0020\u0069\u006e\u0020\u006c\u0069"
-            + "\u006e\u006b\u0065\u0064\u0049\u0073\u0073\u0075\u0065\u0073\u004f"
-            + "\u0066\u0028\u0022\u0069\u0073\u0073\u0075\u0065\u0046\u0075\u006e"
-            + "\u0063\u0074\u0069\u006f\u006e\u0020\u0069\u006e\u0020\u006c\u0069"
-            + "\u006e\u006b\u0065\u0064\u0049\u0073\u0073\u0075\u0065\u0073\u004f"
-            + "\u0066\u0028\u005c\u0022\u0066\u0069\u006c\u0074\u0065\u0072\u003d"
-            + "\u0031\u0030\u0035\u0031\u0031\u0037\u005c\u0022\u002c\u0020\u005c"
-            + "\u0022\u0064\u0065\u0070\u0065\u006e\u0064\u0073\u0020\u006f\u006e"
-            + "\u005c\u0022\u0029\u0020\u0041\u004e\u0044\u0020\u0070\u0072\u006f"
-            + "\u006a\u0065\u0063\u0074\u0020\u003d\u0020\u0041\u0053\u0043\u0053"
-            + "\u0057\u0054\u0045\u0053\u0054\u0022\u0029\u0020\u0041\u004e\u0044"
-            + "\u0020\u0070\u0072\u006f\u006a\u0065\u0063\u0074\u0020\u003d\u0020"
-            + "\u0041\u0053\u0043\u0043\u0052\u0029"):
-            prefiltered_issues.append(issue.key)
+        # for issue in jira.search_issues(
+        #     "\u0066\u0069\u006c\u0074\u0065\u0072\u0020\u003d\u0020\u0031\u0030"
+        #     + "\u0035\u0031\u0031\u0037\u0020\u0041\u004e\u0044\u0020\u004e\u004f"
+        #     + "\u0054\u0020\u0028\u0069\u0073\u0073\u0075\u0065\u0046\u0075\u006e"
+        #     + "\u0063\u0074\u0069\u006f\u006e\u0020\u0069\u006e\u0020\u006c\u0069"
+        #     + "\u006e\u006b\u0065\u0064\u0049\u0073\u0073\u0075\u0065\u0073\u004f"
+        #     + "\u0066\u0028\u0022\u0069\u0073\u0073\u0075\u0065\u0046\u0075\u006e"
+        #     + "\u0063\u0074\u0069\u006f\u006e\u0020\u0069\u006e\u0020\u006c\u0069"
+        #     + "\u006e\u006b\u0065\u0064\u0049\u0073\u0073\u0075\u0065\u0073\u004f"
+        #     + "\u0066\u0028\u005c\u0022\u0066\u0069\u006c\u0074\u0065\u0072\u003d"
+        #     + "\u0031\u0030\u0035\u0031\u0031\u0037\u005c\u0022\u002c\u0020\u005c"
+        #     + "\u0022\u0064\u0065\u0070\u0065\u006e\u0064\u0073\u0020\u006f\u006e"
+        #     + "\u005c\u0022\u0029\u0020\u0041\u004e\u0044\u0020\u0070\u0072\u006f"
+        #     + "\u006a\u0065\u0063\u0074\u0020\u003d\u0020\u0041\u0053\u0043\u0053"
+        #     + "\u0057\u0054\u0045\u0053\u0054\u0022\u0029\u0020\u0041\u004e\u0044"
+        #     + "\u0020\u0070\u0072\u006f\u006a\u0065\u0063\u0074\u0020\u003d\u0020"
+        #     + "\u0041\u0053\u0043\u0043\u0052\u0029"):
+        #     prefiltered_issues.append(issue.key)
+        # print(prefiltered_issues)
+
+        for prefiltered_issue in jira.search_issues(
+        "\u0070\u0072\u006f\u006a\u0065\u0063\u0074\u0020\u003d\u0020\u0041\u0053\u0043\u0043\u0052\u0020\u004f\u0052\u0044\u0045\u0052\u0020\u0042\u0059\u0020\u0052\u0061\u006e\u006b\u0020\u0041\u0053\u0043"):
+            prefiltered_issues.append(prefiltered_issue.key)
         print(prefiltered_issues)
 
         def mails_login_prefilter():
@@ -69,6 +78,7 @@ class jtc_prefilter:
                 try:
                     smtp.sendmail (
                                 jtc_resource.sender_email,
+                                jtc_resource.receiver_email,
                                 msg.as_string()
                                 )
                 except smtplib.SMTPSenderRefused as error:

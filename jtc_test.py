@@ -12,18 +12,20 @@ from selenium.webdriver.chrome.options import Options
 # JTC Tool imports
 import jtc_auth
 import jtc_resource
-import jtc_filter
 import jtc_mail
 import jtc_db_reports
 
 class TestAll(unittest.TestCase):
+    def __init__ (self, context):
+        self.context = context
     # test suite for jira autentication
+    @classmethod
     def test_auth_variables(self):
         #check if variables exist and are strings
         assert isinstance(jtc_resource.usr["usr"], str)
         assert isinstance(jtc_resource.pw["pw"], str)
         assert isinstance(jtc_resource.server["server"], str)
-
+    @classmethod
     def test_jira_login(self):
         # test login to jira
         try:
@@ -31,20 +33,22 @@ class TestAll(unittest.TestCase):
             self.assertEqual(None, login_test.auth)
         except:
             print('error')
-
+    @classmethod
     def test_filter(self):
         # check if JQL Tag is running
-        issues, issue, assignee = jtc_filter.jtc_issuefilter()
-        self.assertNotEqual(None, issues)
-        assert isinstance(assignee, str)
-        self.assertNotEqual(None, issue)
-        if (len(issues)) > 0:
-            self.assertEqual((len(issue)), (len(issues)))
+        self.assertNotEqual(None, self.context.issues)
+        assert isinstance(self.context.assignee, str)
+        self.assertNotEqual(None, self.context.issue)
+        if (len(self.context.issues)) > 0:
+            self.assertEqual((len(self.context.issue)), (len(self.context.issues)))
 #hier muss noch ein test rein ob der filter auch funzt
-
-    def setUp(self):
+    @classmethod
+    def setUpClass(self):
         # test suite for cloning tickets with selenium
         # setup selenium frame
+        # issue, issues, assignee = jtc_filter.run_jtc()
+        # self.context = jtc_context(issue, issues, assignee)
+        self.mail = jtc_mail.SendMail(self.context)
         self.baseUrl = "https://jira-test1.elektrobit.com/browse/ASCSWTEST-49"
         self.options = Options()
         self.options.headless = True
@@ -52,7 +56,7 @@ class TestAll(unittest.TestCase):
         self.driver = webdriver.Chrome(options=self.options)
         self.driver.implicitly_wait(0.2)
         self.driver.get(self.baseUrl)
-
+    @classmethod
     def test_clone(self):
         # check if cloning works
         self.baseUrl = "https://jira-test1.elektrobit.com/browse/ASCSWTEST-49"
@@ -112,7 +116,7 @@ class TestAll(unittest.TestCase):
         except TimeoutException as error:
             error = "An Error occured by clicking the clone button"
             print(error)
-
+    @classmethod
     def set_issue_key(self):
         # try to get issue key
         try:
@@ -122,11 +126,11 @@ class TestAll(unittest.TestCase):
         except TimeoutException as error:
             error = "Issue Key could not be found"
             print(error)
-
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(self):
         # close browser
         self.driver.quit()
-
+    @classmethod
     def test_mail_variables(self):
         # check mailing system
         assert isinstance(jtc_resource.mail_pw, str)

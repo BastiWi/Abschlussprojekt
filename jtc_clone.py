@@ -1,5 +1,4 @@
 '''Module for cloning Ticket: ASCSWTEST-49'''
-import unittest
 import time
 # Selenium Imports
 from selenium import webdriver
@@ -9,26 +8,22 @@ from selenium.webdriver.chrome.options import Options
 # import resources to login to JIRA
 import jtc_resource
 
-class cloneticket(unittest.TestCase):
+class cloneticket:
     # open url using selenium to get access to jira to clone
     # the template ASCSWTEST-49. Thats needed because the jira api
     # does not provide a clone ticket access
-
-    baseUrl = "https://jira-test1.elektrobit.com/browse/ASCSWTEST-49"
-
-    def setUp(self):
+    driver = None
+    def __init__(self):
         # setup environment for Selenium
         self.baseUrl = "https://jira-test1.elektrobit.com/browse/ASCSWTEST-49"
         self.options = Options()
         self.options.headless = True
         self.options.add_argument("--window-size=1920,1080")
         self.driver = webdriver.Chrome(options=self.options)
-        self.driver.implicitly_wait(0.2)
         self.driver.get(self.baseUrl)
 
-    def test_runner(self):
+    def clone_runner(self):
         # Selenium runner for cloning tickets
-        self.baseUrl = "https://jira-test1.elektrobit.com/browse/ASCSWTEST-49"
         self.driver.get(self.baseUrl)
         usr = jtc_resource.usr["usr"]
         password = jtc_resource.pw["pw"]
@@ -40,7 +35,7 @@ class cloneticket(unittest.TestCase):
                                                  + "/div[1]/input",
                                                  )
             usr_input.send_keys(usr)
-            time.sleep(0.5)
+            time.sleep(0.1)
         except TimeoutException as error:
             error = "An Error occured at sending username"
             print(error)
@@ -50,7 +45,7 @@ class cloneticket(unittest.TestCase):
                 "#login-form-password",
             )
             pw_input.send_keys(password)
-            time.sleep(0.5)
+            time.sleep(0.1)
         except TimeoutException as error:
             error = "An Error occured at sending password"
             print(error)
@@ -61,7 +56,7 @@ class cloneticket(unittest.TestCase):
                                                  + "/div/main/form/div[2]/div/input",
                                                  )
             login_btn.click()
-            time.sleep(0.5)
+            time.sleep(0.1)
             # self.assertIn("EB external Jira", self.driver.title)
         except TimeoutException as error:
             error = "An Error occured by clicking the login button"
@@ -75,7 +70,7 @@ class cloneticket(unittest.TestCase):
                                                 + "/div[1]/div[3]/a[2]/span",
                                                 )
             more_btn.click()
-            time.sleep(0.5)
+            time.sleep(0.1)
         except TimeoutException as error:
             error = "An Error occured by clicking the more button"
             print(error)
@@ -88,17 +83,17 @@ class cloneticket(unittest.TestCase):
                                                  + "/aui-section[6]/div/aui-item-link[2]/a",
                                                  )
             clone_btn.click()
-            time.sleep(2.5)
+            time.sleep(0.5)
         except TimeoutException as error:
             error = "An Error occured by clicking the clone button"
             print(error)
         try:
             create_btn = self.driver.find_element (
-                                                  By.XPATH,
-                                                  "/html/body/div[8]/div[2]/form/div[2]/div/input",
+                                                  By.CSS_SELECTOR,
+                                                  "#clone-issue-submit",
                                                   )
             create_btn.click()
-            time.sleep(2.5)
+            time.sleep(1.5)
             self.driver.implicitly_wait(40)
         except TimeoutException as error:
             error = "An Error occured by clicking the create button"
@@ -113,16 +108,16 @@ class cloneticket(unittest.TestCase):
                                              + "/header/div/div[1]/div"
                                              + "/div[2]/ol/li[2]/a"
                                              )
+        self.driver.implicitly_wait(40)
         self.issue_key1 = issue_key.text
         return self.issue_key1
-
-    def tearDown(self):
-        # Browser schließen
-        self.driver.quit()
+    # @classmethod
+    # def tearDown(self):
+    #     # Browser schließen
+    #     self.driver.quit()
 
 def clone_run():
-    cloneticket.setUp(cloneticket)
-    cloneticket.test_runner(cloneticket)
-    i_key = cloneticket.set_issue_key(cloneticket)
-    cloneticket.tearDown(cloneticket)
+    clone = cloneticket()
+    clone.clone_runner()
+    i_key = clone.set_issue_key()
     return i_key

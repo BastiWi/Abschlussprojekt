@@ -6,15 +6,30 @@ import mysql.connector
 import sys
 
 
+try:
+    conn = mysql.connector.connect(
+        user="root",
+        password="",
+        host="127.0.0.1",
+        port=3306,
+        database="jtc_db"
+    )
+except mysql.connector.Error as e:
+    print(f"Error connecting to mySQL Platform: {e}")
+    sys.exit(1)
+
 def jtc_issuefilter():
     # Run filter with original JQL TAG:
     # filter = 105117 AND NOT (issueFunction in linkedIssuesOf("issueFunction in linkedIssuesOf
     # (\"filter=105117\", \"depends on\") AND project = ASCSWTEST") AND project = ASCCR)
     # to find flagged tickets with the label [ENABLED_ASCSWTEST_AUTOLINKAGE]
     
+    string = 'filter = 105117 AND NOT (issueFunction in linkedIssuesOf("issueFunction in linkedIssuesOf(\"filter=105117\", \"depends on\") AND project = ASCSWTEST") AND project = ASCCR)'
+    encoded_string = string.encode("utf-8")
+
     jira = jtc_auth.jtc_login()
     issues = []
-    # for issue in jira.search_issues(
+    # for issue in jira.search_issues(  encoded_string!!!!
     #     "\u0066\u0069\u006c\u0074\u0065\u0072\u0020\u003d\u0020\u0031\u0030"
     #     + "\u0035\u0031\u0031\u0037\u0020\u0041\u004e\u0044\u0020\u004e\u004f"
     #     + "\u0054\u0020\u0028\u0069\u0073\u0073\u0075\u0065\u0046\u0075\u006e"
@@ -41,6 +56,7 @@ def jtc_issuefilter():
 
     # Run through all filtered Tickets, clone a Softwaretest Ticket,
     # set new assignee and block base Ticket by link
+    jira = jtc_auth.jtc_login()
     issue = []
     assignee = jtc_resource.assignee["assignee"]
     for i in range(len(issues)):
@@ -52,21 +68,11 @@ def jtc_issuefilter():
                                inwardIssue=issues[i],
                                outwardIssue=issuekey2
                                )
+        if i == 1: 
+            break
     print(issue)
 
     for m in range(len(issue)): 
-        try:
-            conn = mysql.connector.connect(
-                user="root",
-                password="",
-                host="127.0.0.1",
-                port=3306,
-                database="jtc_db"
-            )
-        except mysql.connector.Error as e:
-            print(f"Error connecting to mySQL Platform: {e}")
-            sys.exit(1)
-
             # Get Cursor
         cur = conn.cursor()
         sql = "INSERT INTO new_issues (issue, link) VALUES (%s, %s)"

@@ -2,16 +2,16 @@
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
-import jtc_filter
 import jtc_resource
 
-issue, issues, assignee = jtc_filter.run_jtc()
-
-class SendMail():
+class SendMail:
     # creating mails
-    def mails_login():
-        '''Try to log in to smtp server'''
+    def __init__ (self, context):
+        self.context = context
+
+    @classmethod
+    def mails_login(self):
+        # Try to log in to smtp server
         smtp = smtplib.SMTP("mail-de.ebgroup.elektrobit.com", 587)
         smtp.ehlo()
         smtp.starttls()
@@ -19,21 +19,17 @@ class SendMail():
         smtp.login(jtc_resource.NB_USER, jtc_resource.mail_pw)
         return smtp
 
-    def mail_content():
+    def mail_content(self):
         # create mail whether at least 1 ticket has been created or another when no 
         # ticket has been created
-        if (len(issues)) > 0:
-            smtp = smtplib.SMTP("mail-de.ebgroup.elektrobit.com", 587)
-            smtp.ehlo()
-            smtp.starttls()
-            smtp.ehlo()
-            smtp.login(jtc_resource.NB_USER, jtc_resource.mail_pw)
+        if (len(self.context.issues)) > 0:
+            smtp = self.mails_login()
             subject = "Report JTC - Automization"
             msg1 = f"""\
-                Hi {assignee},\n\n
+                Hi {self.context.assignee},\n\n
                 These new Tickets have been created.\n
                 \n
-                {str(issue)}
+                {str(self.context.issue)}
                 \n
                 Thank you and have a nice day!!!
                 """
@@ -51,16 +47,12 @@ class SendMail():
                 print(error)
             smtp.close()
 
-        elif (len(issues)) == 0:
-            smtp = smtplib.SMTP("mail-de.ebgroup.elektrobit.com", 587)
-            smtp.ehlo()
-            smtp.starttls()
-            smtp.ehlo()
-            smtp.login(jtc_resource.NB_USER, jtc_resource.mail_pw)
+        elif (len(self.context.issues)) == 0:
+            smtp = self.mails_login()
             subject = "Report JTC - Automization"
 
             msg2 = f"""\
-                Hi {assignee},\n\n
+                Hi {self.context.assignee},\n\n
                 No new Tickets have been created.\n
                 \n
                 Thank you and have a nice day!!!
@@ -80,24 +72,26 @@ class SendMail():
                 print(error)
             smtp.close()
 
-class send_error_mail():
-    def error_mail():
+class send_error_mail:
+    # def __init__(self):
+
+    @classmethod
+    def error_mail(self):
         # send testreport if errors occurred while testing
         smtp = smtplib.SMTP("mail-de.ebgroup.elektrobit.com", 587)
         smtp.ehlo()
         smtp.starttls()
         smtp.ehlo()
-        smtp.login (
-                   jtc_resource.NB_USER,
-                   jtc_resource.mail_pw
-                   )
+        smtp.login(jtc_resource.NB_USER, jtc_resource.mail_pw)
         subject = "Report JTC - Automization"
 
         msg3 = f"""\
-            Hi {assignee},\n\n
+            Hi Sebastian,\n\n
             There have been Issues while running the Testing Suite.\n
             Please check the attachment for first information.\n
-            For further information check the Database Testreports.\n
+            \n
+            For further information check the Testreports\n
+            via the Links in the Database.\n
             \n
             Thank you and have a nice day!!!
             \n
@@ -112,7 +106,6 @@ class send_error_mail():
             smtp.sendmail (
                           jtc_resource.sender_email,
                           jtc_resource.receiver_email,
-                          jtc_resource.receiver_email_2,
                           msg.as_string()
                           )
         except smtplib.SMTPSenderRefused as error:
@@ -120,6 +113,3 @@ class send_error_mail():
         smtp.close()
 
 
-def mailsender():
-    # send Mail and close server
-    SendMail.mail_content()
