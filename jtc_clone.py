@@ -1,123 +1,150 @@
 '''Module for cloning Ticket: ASCSWTEST-49'''
-import time
-# Selenium Imports
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.chrome.options import Options
-# import resources to login to JIRA
-import jtc_resource
-
-class cloneticket:
-    # open url using selenium to get access to jira to clone
-    # the template ASCSWTEST-49. Thats needed because the jira api
-    # does not provide a clone ticket access
-    driver = None
-    def __init__(self):
-        # setup environment for Selenium
-        self.baseUrl = "https://jira-test1.elektrobit.com/browse/ASCSWTEST-49"
-        self.options = Options()
-        self.options.headless = True
-        self.options.add_argument("--window-size=1920,1080")
-        self.driver = webdriver.Chrome(options=self.options)
-        self.driver.get(self.baseUrl)
-
-    def clone_runner(self):
-        # Selenium runner for cloning tickets
-        self.driver.get(self.baseUrl)
-        usr = jtc_resource.usr["usr"]
-        password = jtc_resource.pw["pw"]
-        try:
-            usr_input = self.driver.find_element (
-                                                 By.XPATH,
-                                                 "/html/body/div[1]/div/div/div"
-                                                 + "/main/form/div[1]/div[2]/div"
-                                                 + "/div[1]/input",
-                                                 )
-            usr_input.send_keys(usr)
-            time.sleep(0.1)
-        except TimeoutException as error:
-            error = "An Error occured at sending username"
-            print(error)
-        try:
-            pw_input = self.driver.find_element(
-                By.CSS_SELECTOR,
-                "#login-form-password",
-            )
-            pw_input.send_keys(password)
-            time.sleep(0.1)
-        except TimeoutException as error:
-            error = "An Error occured at sending password"
-            print(error)
-        try:
-            login_btn = self.driver.find_element (
-                                                 By.XPATH,
-                                                 "/html/body/div[1]/div/div"
-                                                 + "/div/main/form/div[2]/div/input",
-                                                 )
-            login_btn.click()
-            time.sleep(0.1)
-            # self.assertIn("EB external Jira", self.driver.title)
-        except TimeoutException as error:
-            error = "An Error occured by clicking the login button"
-            print(error)
-        try:
-            more_btn = self.driver.find_element (
-                                                By.XPATH,
-                                                "/html/body/div[1]/div[2]/div[1]"
-                                                + "/div/div/main/div/div[2]/div"
-                                                + "/header/div/div[2]/div/div/div"
-                                                + "/div[1]/div[3]/a[2]/span",
-                                                )
-            more_btn.click()
-            time.sleep(0.1)
-        except TimeoutException as error:
-            error = "An Error occured by clicking the more button"
-            print(error)
-        try:
-            clone_btn = self.driver.find_element (
-                                                 By.XPATH,
-                                                 "/html/body/div[1]/div[2]/div[1]"
-                                                 + "/div/div/main/div/div[2]/div/header"
-                                                 + "/div/div[2]/div/aui-dropdown-menu[1]"
-                                                 + "/aui-section[6]/div/aui-item-link[2]/a",
-                                                 )
-            clone_btn.click()
-            time.sleep(0.5)
-        except TimeoutException as error:
-            error = "An Error occured by clicking the clone button"
-            print(error)
-        try:
-            create_btn = self.driver.find_element (
-                                                  By.CSS_SELECTOR,
-                                                  "#clone-issue-submit",
-                                                  )
-            create_btn.click()
-            time.sleep(1.5)
-            self.driver.implicitly_wait(40)
-        except TimeoutException as error:
-            error = "An Error occured by clicking the create button"
-            print(error)
-
-    def set_issue_key(self):
-        # get the name (issue_key) of the newly created ticket
-        issue_key = self.driver.find_element (
-                                             By.XPATH,
-                                             "/html/body/div[1]/div[2]/div[1]"
-                                             + "/div/div/main/div/div[2]/div"
-                                             + "/header/div/div[1]/div"
-                                             + "/div[2]/ol/li[2]/a"
-                                             )
-        self.driver.implicitly_wait(40)
-        self.issue_key1 = issue_key.text
-        return self.issue_key1
-    # @classmethod
-    # def tearDown(self):
-    #     # Browser schließen
-    #     self.driver.quit()
+from jira import JIRAError
+import json
+import jtc_auth
 
 def clone_run():
-    clone = cloneticket()
-    clone.clone_runner()
-    i_key = clone.set_issue_key()
-    return i_key
+    jira = jtc_auth.jtc_login()
+
+    def create_jira_issue(jira, fields, retries=3):
+        """
+        Creates a Jira issue with given fields. If fields are not allowed to be
+        set, they are removed. By default it tries to create the issue three times.
+        Returns Jira object and a list of removed fields.
+        """
+        try:
+            new_issue = jira.create_issue(fields=fields, prefetch=True)
+            return new_issue, []
+        except JIRAError as e:
+            if retries <= 0:
+                raise e
+            ignored_fields = []
+            message = json.loads(e.response.text)
+            for i in message['errors'].keys():
+                if i in fields:
+                    del fields[i]
+                    ignored_fields.append(i)
+            new_issue, b = create_jira_issue(jira, fields, retries-1)
+            ignored_fields += b
+            return new_issue, ignored_fields
+
+
+    def clone_jira_issue(jira, origin_issue):
+        """
+        Clones the give Jira issue. Jira issue can be referenced by ID or
+        by issue object.
+        Returns Jira object and a list of removed fields.
+        """
+        if type(origin_issue) == str:
+            origin_issue = jira.issue(origin_issue)
+
+        fields = origin_issue.raw['fields']
+        return create_jira_issue(jira, fields)
+
+
+    new_issue, ignored_fields = clone_jira_issue(jira, 'ASCSWTEST-49')
+    print(new_issue)
+
+
+    # ID of the parent ticket to attach subtasks to
+    parent_issue = new_issue
+    project_key = parent_issue.fields.project.key
+    parent_issue_key = parent_issue.key
+
+    # create subtask
+    subtask1 = jira.create_issue (
+                                project=project_key,
+                                priority = {'name': 'Major'},
+                                summary='Support from virtual integration team for <feature>',
+                                description='Description:\n'
+                                            +'Work packages:\n'
+                                                + '1. Kick off (1 or 2 hours): virtual integration team introduces software test development team to the feature\n'
+                                                + '2. Verification criteria: create "feavc" specobjects according to Requirements management plan\n'
+                                                + '3. Provide support with ECU configuration\n'
+                                                + '4. Review test specification',
+                                issuetype={'name': 'Sub-task'},
+                                parent={'key': parent_issue_key}
+                                )
+
+    subtask2 = jira.create_issue (
+                                project=project_key,
+                                priority = {'name': 'Major'},
+                                summary='Get familiar with the feature <feature>',
+                                description='Description:\n'
+                                            +'TBD\n'
+                                                + 'Acceptance criteria:\n'
+                                                + 'Understood the basic functionality of the feature\n',
+                                issuetype={'name': 'Sub-task'},
+                                parent={'key': parent_issue_key}
+                                )
+
+    subtask3 = jira.create_issue (
+                                project=project_key,
+                                priority = {'name': 'Major'},
+                                summary='Create branch and remove it after merge to trunk for <feature>',
+                                description='Description:\n'
+                                            +'TBD\n'
+                                                + 'Acceptance criteria:\n'
+                                                + '1. Branch created\n'
+                                                + '2. Merge To Trunk ticket closed\n'
+                                                + '3. Branch deleted',
+                                issuetype={'name': 'Sub-task'},
+                                parent={'key': parent_issue_key}
+                                )
+
+    subtask4 = jira.create_issue (
+                                project=project_key,
+                                priority = {'name': 'Major'},
+                                summary='Create Tricore configuration for <feature>',
+                                description='Description:\n'
+                                            +'TBD\n'
+                                                + 'Acceptance criteria:\n'
+                                                + '1. Configuration generated and build properly using the latest ACG delivered\n'
+                                                + '2. Config files reviewed\n',
+                                issuetype={'name': 'Sub-task'},
+                                parent={'key': parent_issue_key}
+                                )
+
+    subtask5 = jira.create_issue (
+                                project=project_key,
+                                priority = {'name': 'Major'},
+                                summary='Test specification for <feature>',
+                                description='Description:\n'
+                                            +'TBD\n'
+                                                + 'Acceptance criteria:\n'
+                                                + '1. Test Specifications available in SCTM\n'
+                                                + '2. Review of Test Specification done\n'
+                                                + '3. Test Specifications export file from SCTM attached to this ticket'
+                                                + '4. Review of VC done',
+                                issuetype={'name': 'Sub-task'},
+                                parent={'key': parent_issue_key}
+                                )
+
+    subtask6 = jira.create_issue (
+                                project=project_key,
+                                priority = {'name': 'Major'},
+                                summary='Implement tests for <feature>',
+                                description='Description:\n'
+                                            +'TBD\n'
+                                            + 'Acceptance criteria:\n'
+                                                + '1. The tests are linked to test spec from SCTM.\n'
+                                                + '2. Tests executed successfully\n'
+                                                + '3. PEP8 code style followed\n'
+                                                + '4. Review of test implementation done',
+                                issuetype={'name': 'Sub-task'},
+                                parent={'key': parent_issue_key}
+                                )
+
+    subtask7 = jira.create_issue (
+                                project=project_key,
+                                priority = {'name': 'Major'},
+                                summary='Merge branch to trunk for <feature>',
+                                description='Description:\n'
+                                            +'TBD\n'
+                                                + 'Acceptance criteria:\n'
+                                                + '1. Test suite executed successfully on SCTM with the latest ITA version\n'
+                                                + '2. Review done\n',
+                                issuetype={'name': 'Sub-task'},
+                                parent={'key': parent_issue_key}
+                                )
+    return str(new_issue)

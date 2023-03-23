@@ -2,6 +2,7 @@
 import jtc_auth
 import jtc_clone
 import jtc_resource
+import jtc_mail
 import mysql.connector
 import sys
 
@@ -85,7 +86,7 @@ def jtc_issuefilter():
 
     return issue, issues, assignee
 
-def run_jtc():
-    # Create instance of filter()
-    mail_info = jtc_issuefilter()
-    return mail_info
+# def run_jtc():
+#     # Create instance of filter()
+#     jtc_issuefilter()
+

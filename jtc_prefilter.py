@@ -61,7 +61,7 @@ class jtc_prefiltering:
                 smtp.starttls()
                 smtp.ehlo()
                 smtp.login(jtc_resource.NB_USER, jtc_resource.mail_pw)
-                subject = "Report JTC - Automization"
+                subject = "Report JTC - Automization PreFilter"
                 msg1 = f"""\
                     Hi Gürkan,\n\n
                     These new Tickets will need to be flagged as \n

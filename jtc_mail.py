@@ -24,7 +24,7 @@ class SendMail:
         # ticket has been created
         if (len(self.context.issues)) > 0:
             smtp = self.mails_login()
-            subject = "Report JTC - Automization"
+            subject = "Report JTC - Automization TicketCreator"
             msg1 = f"""\
                 Hi {self.context.assignee},\n\n
                 These new Tickets have been created.\n
@@ -49,7 +49,7 @@ class SendMail:
 
         elif (len(self.context.issues)) == 0:
             smtp = self.mails_login()
-            subject = "Report JTC - Automization"
+            subject = "Report JTC - Automization TicketCreator"
 
             msg2 = f"""\
                 Hi {self.context.assignee},\n\n
@@ -83,7 +83,7 @@ class send_error_mail:
         smtp.starttls()
         smtp.ehlo()
         smtp.login(jtc_resource.NB_USER, jtc_resource.mail_pw)
-        subject = "Report JTC - Automization"
+        subject = "Report JTC - Testing ErrorMessage"
 
         msg3 = f"""\
             Hi Sebastian,\n\n
