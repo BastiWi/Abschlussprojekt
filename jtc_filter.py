@@ -1,11 +1,9 @@
 '''Filter Project ASCCR to get the Tickets which should be blocked by Softwaretest Ticket'''
+import sys
+import mysql.connector
 import jtc_auth
 import jtc_clone
 import jtc_resource
-import jtc_mail
-import mysql.connector
-import sys
-
 
 try:
     conn = mysql.connector.connect(
@@ -20,38 +18,13 @@ except mysql.connector.Error as e:
     sys.exit(1)
 
 def jtc_issuefilter():
-    # Run filter with original JQL TAG:
-    # filter = 105117 AND NOT (issueFunction in linkedIssuesOf("issueFunction in linkedIssuesOf
-    # (\"filter=105117\", \"depends on\") AND project = ASCSWTEST") AND project = ASCCR)
-    # to find flagged tickets with the label [ENABLED_ASCSWTEST_AUTOLINKAGE]
-    
-    string = 'filter = 105117 AND NOT (issueFunction in linkedIssuesOf("issueFunction in linkedIssuesOf(\"filter=105117\", \"depends on\") AND project = ASCSWTEST") AND project = ASCCR)'
-    encoded_string = string.encode("utf-8")
+    '''Run filter to find flagged tickets with the label [ENABLED_ASCSWTEST_AUTOLINKAGE]'''
 
     jira = jtc_auth.jtc_login()
+    myfilter = 'filter = 105250 AND (labels = ENABLED_ASCSWTEST_AUTOLINKAGE)'
+    encoded_filter = myfilter.encode("utf-8")
     issues = []
-    # for issue in jira.search_issues(  encoded_string!!!!
-    #     "\u0066\u0069\u006c\u0074\u0065\u0072\u0020\u003d\u0020\u0031\u0030"
-    #     + "\u0035\u0031\u0031\u0037\u0020\u0041\u004e\u0044\u0020\u004e\u004f"
-    #     + "\u0054\u0020\u0028\u0069\u0073\u0073\u0075\u0065\u0046\u0075\u006e"
-    #     + "\u0063\u0074\u0069\u006f\u006e\u0020\u0069\u006e\u0020\u006c\u0069"
-    #     + "\u006e\u006b\u0065\u0064\u0049\u0073\u0073\u0075\u0065\u0073\u004f"
-    #     + "\u0066\u0028\u0022\u0069\u0073\u0073\u0075\u0065\u0046\u0075\u006e"
-    #     + "\u0063\u0074\u0069\u006f\u006e\u0020\u0069\u006e\u0020\u006c\u0069"
-    #     + "\u006e\u006b\u0065\u0064\u0049\u0073\u0073\u0075\u0065\u0073\u004f"
-    #     + "\u0066\u0028\u005c\u0022\u0066\u0069\u006c\u0074\u0065\u0072\u003d"
-    #     + "\u0031\u0030\u0035\u0031\u0031\u0037\u005c\u0022\u002c\u0020\u005c"
-    #     + "\u0022\u0064\u0065\u0070\u0065\u006e\u0064\u0073\u0020\u006f\u006e"
-    #     + "\u005c\u0022\u0029\u0020\u0041\u004e\u0044\u0020\u0070\u0072\u006f"
-    #     + "\u006a\u0065\u0063\u0074\u0020\u003d\u0020\u0041\u0053\u0043\u0053"
-    #     + "\u0057\u0054\u0045\u0053\u0054\u0022\u0029\u0020\u0041\u004e\u0044"
-    #     + "\u0020\u0070\u0072\u006f\u006a\u0065\u0063\u0074\u0020\u003d\u0020"
-    #     + "\u0041\u0053\u0043\u0043\u0052\u0029"):
-    #     issues.append(issue.key)
-    # print(issues)
-
-    for issue in jira.search_issues(
-        "\u0070\u0072\u006f\u006a\u0065\u0063\u0074\u0020\u003d\u0020\u0041\u0053\u0043\u0043\u0052\u0020\u004f\u0052\u0044\u0045\u0052\u0020\u0042\u0059\u0020\u0052\u0061\u006e\u006b\u0020\u0041\u0053\u0043"):
+    for issue in jira.search_issues(encoded_filter):
         issues.append(issue.key)
     print(issues)
 
@@ -69,11 +42,11 @@ def jtc_issuefilter():
                                inwardIssue=issues[i],
                                outwardIssue=issuekey2
                                )
-        if i == 1: 
+        if i == 1:
             break
     print(issue)
 
-    for m in range(len(issue)): 
+    for m in range(len(issue)):
             # Get Cursor
         cur = conn.cursor()
         sql = "INSERT INTO new_issues (issue, link) VALUES (%s, %s)"
@@ -85,8 +58,3 @@ def jtc_issuefilter():
         conn.commit()
 
     return issue, issues, assignee
-
-# def run_jtc():
-#     # Create instance of filter()
-#     jtc_issuefilter()
-

@@ -5,6 +5,7 @@ import jtc_filter
 import jtc_context
 
 def jtc_run():
+    '''Mainfunction to run the script'''
     jtc_prefilter.jtc_prefiltering.jtc_run_prefilter()
     issue, issues, assignee = jtc_filter.jtc_issuefilter()
     context = jtc_context.jtc_context(issue, issues, assignee)   

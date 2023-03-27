@@ -5,13 +5,13 @@ from email.mime.text import MIMEText
 import jtc_resource
 
 class SendMail:
-    # creating mails
+    '''creating mails'''
     def __init__ (self, context):
         self.context = context
 
     @classmethod
-    def mails_login(self):
-        # Try to log in to smtp server
+    def mails_login(cls):
+        '''Try to log in to smtp server'''
         smtp = smtplib.SMTP("mail-de.ebgroup.elektrobit.com", 587)
         smtp.ehlo()
         smtp.starttls()
@@ -20,8 +20,8 @@ class SendMail:
         return smtp
 
     def mail_content(self):
-        # create mail whether at least 1 ticket has been created or another when no 
-        # ticket has been created
+        '''create mail whether at least 1 ticket has been created or another when no
+        ticket has been created'''
         if (len(self.context.issues)) > 0:
             smtp = self.mails_login()
             subject = "Report JTC - Automization TicketCreator"
@@ -73,11 +73,11 @@ class SendMail:
             smtp.close()
 
 class send_error_mail:
-    # def __init__(self):
+    '''Class for sending error E-Mails'''
 
     @classmethod
-    def error_mail(self):
-        # send testreport if errors occurred while testing
+    def error_mail(cls):
+        '''send testreport if errors occurred while testing'''
         smtp = smtplib.SMTP("mail-de.ebgroup.elektrobit.com", 587)
         smtp.ehlo()
         smtp.starttls()
@@ -98,7 +98,7 @@ class send_error_mail:
             """
         msg = MIMEMultipart()
         msg.attach(MIMEText(msg3))
-        file = open('Test-Report.txt')
+        file = open('Test-Report.txt', encoding="utf-8")
         msg.attach(MIMEText(file.read()))
         msg['Subject'] = subject
         msg['To'] = jtc_resource.receiver_email
@@ -111,5 +111,3 @@ class send_error_mail:
         except smtplib.SMTPSenderRefused as error:
             print(error)
         smtp.close()
-
-
